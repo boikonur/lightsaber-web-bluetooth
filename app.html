@@ -135,7 +135,8 @@ if ('serviceWorker' in navigator) {
 
 <script>
 
-let serviceUuid = '713d0000-389c-f637-b1d7-91b361ae7678';
+let serviceUuidNano = '713d0000-389c-f637-b1d7-91b361ae7678';
+let serviceUuidHm = '0000ffe0-0000-1000-8000-00805f9b34fb';
 
 var device;
 var server;
@@ -154,6 +155,8 @@ var status_cb;
 var buffer = "";
 var track_lines;
 var tracks_listed = false;
+var g_module;
+var serviceUuid;
 
 function SendNext() {
   if (!current_packet) {
@@ -386,10 +389,23 @@ function dumpChar(c) {
 
 async function Connect() {
   try {
-    let rxUuid = '713d0002-389c-f637-b1d7-91b361ae7678';
-    let txUuid = '713d0003-389c-f637-b1d7-91b361ae7678';
-    let pwUuid = '713d0004-389c-f637-b1d7-91b361ae7678';
-    let statusUuid = '713d0005-389c-f637-b1d7-91b361ae7678';
+
+    if( g_module == "nano"){
+      let rxUuid = '713d0002-389c-f637-b1d7-91b361ae7678';
+      let txUuid = '713d0003-389c-f637-b1d7-91b361ae7678';
+      let pwUuid = '713d0004-389c-f637-b1d7-91b361ae7678';
+      let statusUuid = '713d0005-389c-f637-b1d7-91b361ae7678';
+    }else
+
+    if( g_module == "hm"){
+      let rxUuid = '0000ffe1-0000-1000-8000-00805f9b34fb';
+      let txUuid = '0000ffe2-0000-1000-8000-00805f9b34fb';
+    }else
+    {
+      alert("something is wrong");
+    }
+
+ 
 
     console.log('Connecting to GATT Server...');
     server = await device.gatt.connect();
@@ -402,22 +418,30 @@ async function Connect() {
     console.log('Getting Characteristics...');
     rx = await service.getCharacteristic(rxUuid);
     tx = await service.getCharacteristic(txUuid);
-    pw = await service.getCharacteristic(pwUuid);
-    status = await service.getCharacteristic(statusUuid);
+
+    if( g_module == "nano"){
+      pw = await service.getCharacteristic(pwUuid);
+      status = await service.getCharacteristic(statusUuid);
+    }
+   
 
     if (1) {
       dumpChar(rx);
       dumpChar(tx);
+      if( g_module == "nano"){
       dumpChar(pw);
       dumpChar(status);
+    }
     }
 
     console.log("StartNotify");
     await rx.startNotifications();
     rx.addEventListener('characteristicvaluechanged', OnRX);
 
-    await status.startNotifications();
-    status.addEventListener('characteristicvaluechanged', OnStatus);
+    if( g_module == "nano"){
+      await status.startNotifications();
+      status.addEventListener('characteristicvaluechanged', OnStatus);
+    }
 
     device.addEventListener('gattserverdisconnected', onDisconnected);
   }
@@ -427,7 +451,7 @@ async function Connect() {
     throw e;
   }
 
-
+if( g_module == "nano"){
   console.log("Sending PW");
   var password = document.getElementById('password_val').value;
   var status = await SendPW(password);
@@ -442,8 +466,15 @@ async function Connect() {
     throw 'Wrong Password';
   }
 }
+else{
+  document.getElementById('while_connected').style.visibility='visible';  
+  document.getElementById('while_disconnected').style.visibility='hidden'; 
+}
+ 
+}
 
 async function Run() {
+
   document.getElementById('EMSG').innerHTML = '';
 
   console.log('Requesting Bluetooth Device...');
@@ -562,10 +593,19 @@ function Init() {
 function changeModule(){
   var moduleType = document.getElementById("moduleType");
     var selectedValue = moduleType.options[moduleType.selectedIndex].value;
+
+    g_module=selectedValue;
     switch(selectedValue)
     {
-    case "nano": document.getElementById("password").style.visibility = "visible"; break;
-    case "hm": document.getElementById("password").style.visibility = "hidden"; break;
+    case "nano": 
+    document.getElementById("password").style.visibility = "visible"; 
+    serviceUuid=serviceUuidNano;
+    break;
+    
+    case "hm": 
+    document.getElementById("password").style.visibility = "hidden"; 
+    serviceUuid=serviceUuidHm;
+    break;
     }  
 }
 
