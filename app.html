@@ -136,7 +136,7 @@ if ('serviceWorker' in navigator) {
 <script>
 
 let serviceUuidNano = '713d0000-389c-f637-b1d7-91b361ae7678';
-let serviceUuidHm = '0000ffe0-0000-1000-8000-00805f9b34fb';
+let serviceUuidHm = 0xFFE0;
 
 var device;
 var server;
@@ -398,8 +398,8 @@ async function Connect() {
     }else
 
     if( g_module == "hm"){
-      let rxUuid = '0000ffe1-0000-1000-8000-00805f9b34fb';
-      let txUuid = '0000ffe2-0000-1000-8000-00805f9b34fb';
+      let rxUuid = 0xFFE1;
+      // let txUuid = 0xFFE0;
     }else
     {
       alert("something is wrong");
@@ -417,9 +417,10 @@ async function Connect() {
 
     console.log('Getting Characteristics...');
     rx = await service.getCharacteristic(rxUuid);
-    tx = await service.getCharacteristic(txUuid);
+   
 
     if( g_module == "nano"){
+      tx = await service.getCharacteristic(txUuid);
       pw = await service.getCharacteristic(pwUuid);
       status = await service.getCharacteristic(statusUuid);
     }
@@ -427,8 +428,9 @@ async function Connect() {
 
     if (1) {
       dumpChar(rx);
-      dumpChar(tx);
+
       if( g_module == "nano"){
+        dumpChar(tx);
       dumpChar(pw);
       dumpChar(status);
     }
@@ -452,16 +454,16 @@ async function Connect() {
   }
 
 if( g_module == "nano"){
-  console.log("Sending PW");
+  alert("Sending PW");
   var password = document.getElementById('password_val').value;
   var status = await SendPW(password);
   if (status == "OK") {
-    console.log("Authenticated.");
+    alert("Authenticated.");
     localStorage.password = password;
     document.getElementById('while_connected').style.visibility='visible';  
     document.getElementById('while_disconnected').style.visibility='hidden';  
   } else {
-    console.log("WRONG PASSWORD!");
+    alert("WRONG PASSWORD!");
     document.getElementById('EMSG').innerHTML = 'Wrong Password';
     throw 'Wrong Password';
   }
