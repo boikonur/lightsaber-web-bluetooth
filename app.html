@@ -429,7 +429,7 @@ async function Connect() {
 
 
   console.log("Sending PW");
-  var password = document.getElementById('password').value;
+  var password = document.getElementById('password_val').value;
   var status = await SendPW(password);
   if (status == "OK") {
     console.log("Authenticated.");
@@ -556,11 +556,33 @@ function Init() {
   if (localStorage.password) {
     document.getElementById('password').value = localStorage.password;
   }
+  changeModule();
+}
+
+function changeModule(){
+  var moduleType = document.getElementById("moduleType");
+    var selectedValue = moduleType.options[moduleType.selectedIndex].value;
+    switch(selectedValue)
+    {
+    case "nano": document.getElementById("password").style.visibility = "visible"; break;
+    case "hm": document.getElementById("password").style.visibility = "hidden"; break;
+    }  
 }
 
 </script>
 <span class=pwbox id=while_disconnected>
-Password:&nbsp;<input class=pwinput type=password id=password onkeydown="if (event.keyCode == 13) Run();"><button class=pwinput type=button onclick='Run()'>Connect</button><br>
+    <span>Module Type:</span>
+    <select  class=pwinput id="moduleType" onchange="changeModule();">
+      <option value="nano">BleNano</option>
+      <option value="hm">HM-XX</option>
+    </select>
+  </br>
+  <div id="password">
+      <span>Password:</span>
+      <input class=pwinput type=password id=password_val onkeydown="if (event.keyCode == 13) Run();">
+  </div>
+ 
+<button class=pwinput type=button onclick='Run()'>Connect</button><br>
 <div id=EMSG  style='visibility:hidden;'></div>
 </span>
 <br>
