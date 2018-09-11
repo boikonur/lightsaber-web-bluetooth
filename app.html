@@ -136,7 +136,7 @@ if ('serviceWorker' in navigator) {
 <script>
 
 let serviceUuidNano = '713d0000-389c-f637-b1d7-91b361ae7678';
-let serviceUuidHm = '0000ffe0-0000-1000-8000-00805f9b34fb';
+let serviceUuidHmJdy = '0000ffe0-0000-1000-8000-00805f9b34fb';
 
 var device;
 var server;
@@ -390,22 +390,17 @@ function dumpChar(c) {
 async function Connect() {
   try {
 
-    if( g_module == "nano"){
-      let rxUuid = '713d0002-389c-f637-b1d7-91b361ae7678';
-      let txUuid = '713d0003-389c-f637-b1d7-91b361ae7678';
-      let pwUuid = '713d0004-389c-f637-b1d7-91b361ae7678';
-      let statusUuid = '713d0005-389c-f637-b1d7-91b361ae7678';
-    }else
 
-    if( g_module == "hm"){
-      let rxUuid = '0000ffe1-0000-1000-8000-00805f9b34fb';
-      let txUuid = '0000ffe2-0000-1000-8000-00805f9b34fb';
-    }else
-    {
-      alert("something is wrong");
-    }
-
+        let rxUuidNano = '713d0002-389c-f637-b1d7-91b361ae7678';
+        let txUuidNano = '713d0003-389c-f637-b1d7-91b361ae7678';
+        let pwUuidNano = '713d0004-389c-f637-b1d7-91b361ae7678';
+        let statusUuidNano = '713d0005-389c-f637-b1d7-91b361ae7678';
+  
+        let rxUuidHm = '0000ffe1-0000-1000-8000-00805f9b34fb'; 
+        let txUuidHm = '0000ffe2-0000-1000-8000-00805f9b34fb';
  
+       let rxTxUuidJdy = '0000ffe1-0000-1000-8000-00805f9b34fb'; 
+
 
     console.log('Connecting to GATT Server...');
     server = await device.gatt.connect();
@@ -414,25 +409,35 @@ async function Connect() {
     console.log('Getting Service...');
     const service = await server.getPrimaryService(serviceUuid);
     console.log(service)
-
     console.log('Getting Characteristics...');
-    rx = await service.getCharacteristic(rxUuid);
-    tx = await service.getCharacteristic(txUuid);
+    
 
-    if( g_module == "nano"){
-      pw = await service.getCharacteristic(pwUuid);
-      status = await service.getCharacteristic(statusUuid);
-    }
-   
+    switch( g_module){
+          case "nano" :
+            rx = await service.getCharacteristic(rxUuidNano);
+            tx = await service.getCharacteristic(txUuidNano);
+            pw = await service.getCharacteristic(pwUuidNano);
+            status = await service.getCharacteristic(statusUuidNano);
+          break;
 
-    if (1) {
-      dumpChar(rx);
-      dumpChar(tx);
-      if( g_module == "nano"){
-      dumpChar(pw);
-      dumpChar(status);
-    }
-    }
+          case "hm":
+            rx = await service.getCharacteristic(rxUuidHm);
+            tx = await service.getCharacteristic(txUuidHm);
+          break;
+
+          case "jdy":
+          rx = await service.getCharacteristic(rxTxUuidJdy);
+          tx = rx;
+        }
+ 
+
+    // if (1) {
+    //   dumpChar(rx);
+    //   dumpChar(tx);
+    //   dumpChar(pw);
+    //   dumpChar(status);
+  
+    // }
 
     console.log("StartNotify");
     await rx.startNotifications();
@@ -467,10 +472,10 @@ if( g_module == "nano"){
   }
 }
 else{
-  document.getElementById('while_connected').style.visibility='visible';  
-  document.getElementById('while_disconnected').style.visibility='hidden'; 
+document.getElementById('while_connected').style.visibility='visible';  
+document.getElementById('while_disconnected').style.visibility='hidden'; 
 }
- 
+
 }
 
 async function Run() {
@@ -603,8 +608,9 @@ function changeModule(){
     break;
     
     case "hm": 
+    case "jdy": 
     document.getElementById("password").style.visibility = "hidden"; 
-    serviceUuid=serviceUuidHm;
+    serviceUuid=serviceUuidHmJdy;
     break;
     }  
 }
@@ -615,15 +621,16 @@ function changeModule(){
     <select  class=pwinput id="moduleType" onchange="changeModule();">
       <option value="nano">BleNano</option>
       <option value="hm">HM-XX</option>
+      <option value="jdy">JDY-XX</option>
     </select>
-  </br>
+  <br>
   <div id="password">
       <span>Password:</span>
       <input class=pwinput type=password id=password_val onkeydown="if (event.keyCode == 13) Run();">
   </div>
  
 <button class=pwinput type=button onclick='Run()'>Connect</button><br>
-<div id=EMSG  style='visibility:hidden;'></div>
+<div id=EMSG  style='color: white;'></div>
 </span>
 <br>
 
